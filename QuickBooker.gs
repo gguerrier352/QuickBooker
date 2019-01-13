@@ -1,4 +1,10 @@
- 
+ // todo 
+// add error catching for no rooms . error message 
+// add rooms for tmp and atl hard code id ?
+// modularize the method for booking rooms. Reduce to 1 method maybe 2 instead of 3. 
+// find way to communicate at user 
+// design a logo for it
+// 
 function doGet(e) 
 {
   //Logger.log("dogett!");
@@ -93,14 +99,24 @@ function book()
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+  if (roomCalendar == null)
+  {
+     var messageError = "No rooms found.";
+    sendMessage(messageError);
+    return messageError;
+  }
+  else
+  {
   var stringCalendarObj= openRoomsId[0];
   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+  
 
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
   sendMessage(message);
   return message;
+  }
 }
 
 
@@ -148,14 +164,24 @@ function bookTampa()
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+  if (roomCalendar == null)
+  {
+     var messageError = "No rooms found.";
+    sendMessage(messageError);
+    return messageError;
+  }
+  else
+  {
   var stringCalendarObj= openRoomsId[0];
   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+  
 
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
   sendMessage(message);
   return message;
+  }
 }
 
 
@@ -203,14 +229,24 @@ function bookGainesville()
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+  if (roomCalendar == null)
+  {
+     var messageError = "No rooms found.";
+    sendMessage(messageError);
+    return messageError;
+  }
+  else
+  {
   var stringCalendarObj= openRoomsId[0];
   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+  
 
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
   sendMessage(message);
   return message;
+  }
 }
 
 
@@ -258,12 +294,22 @@ function bookAtlanta()
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+  if (roomCalendar == null)
+  {
+     var messageError = "No rooms found.";
+    sendMessage(messageError);
+    return messageError;
+  }
+  else
+  {
   var stringCalendarObj= openRoomsId[0];
   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+  
 
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
   sendMessage(message);
   return message;
+  }
 }
