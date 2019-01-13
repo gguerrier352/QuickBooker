@@ -1,22 +1,22 @@
  
 function doGet(e) 
 {
-  Logger.log("dogett!");
+  //Logger.log("dogett!");
   return HtmlService.createHtmlOutput(book());
 }
  
 
 function doPost(e)
 {
-  Logger.log("inside!");   
+ // Logger.log("inside!");   
 
   var commandReceived = e.parameter["text"];
   
   if (commandReceived.match(/help/)) showHelp();
   if (commandReceived.match(/book/)) book();
-  if (commandReceived.match(/book/)) book(); //TMP
-  if (commandReceived.match(/book/)) book(); // GNV
-  if (commandReceived.match(/book/)) book(); //ATL
+  if (commandReceived.match(/TMP/)) bookTampa(); //TMP
+  if (commandReceived.match(/GNV/)) bookGainesville(); // GNV
+  if (commandReceived.match(/ATL/)) bookAtlanta(); //ATL
 }
 
 
@@ -184,7 +184,7 @@ function bookGainesville()
   {    
     var first4 = calendars[i].getName().substr(0,4);
     
-    if(first4 !== 'TPA-')
+    if(first4 !== 'GNV-')
     {
       continue;
     }
@@ -239,7 +239,7 @@ function bookAtlanta()
   {    
     var first4 = calendars[i].getName().substr(0,4);
     
-    if(first4 !== 'TPA-')
+    if(first4 !== 'ATL-')
     {
       continue;
     }
