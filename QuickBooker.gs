@@ -20,9 +20,9 @@ function doPost(e)
   
   if (commandReceived.match(/help/)) showHelp();
   if (commandReceived.match(/book/)) book();
-  if (commandReceived.match(/TMP/)) bookTampa(); //TMP
-  if (commandReceived.match(/GNV/)) bookGainesville(); // GNV
-  if (commandReceived.match(/ATL/)) bookAtlanta(); //ATL
+  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); //TMP
+  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville(); // GNV
+  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta(); //ATL
 }
 
 
@@ -132,8 +132,16 @@ function bookTampa()
   
   //make list of all tampa office rooms. 
   
+  var fortDesotoRoomId = "352inc.com_775974472d726e5462556d30444d4f50396f72737077@resource.calendar.google.com";
+  var madeiraRoomId = "352inc.com_31782d7065526f7074456149774d50564a7161726e51@resource.calendar.google.com";
+  var stPeteBeach = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
+  var sunsetBeachRoomId = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
+  
+  var roomsInTampa = [fortDesotoRoomId,madeiraRoomId,stPeteBeach,sunsetBeachRoomId];
+
+  
   //get all the calendars. 
-  var calendars = CalendarApp.getAllCalendars();
+ // var calendars = CalendarApp.getAllCalendars();
   var openRoomsName = [];
   var openRoomsId = [];
   
@@ -141,24 +149,25 @@ function bookTampa()
   var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
  
-  for(var i=0; i<calendars.length; i++) 
+  for(var i=0; i<roomsInTampa.length; i++) 
   {    
-    var first4 = calendars[i].getName().substr(0,4);
+    //var first4 = roomsInTampa[i].getName().substr(0,4);
     
-    if(first4 !== 'TPA-')
-    {
-      continue;
-    }
+    //if(first4 !== 'TPA-')
+    //{
+      //continue;
+  //  }
       
     // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendars[i].getEvents(now, hourFromNow);
+    var meetingInTwoHours = roomsInTampa[i].getEvents(now, hourFromNow);
     
     if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length) 
        {
+         var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);
          // array does not exist, is not an array, or is empty
          // add this room to a list of rooms available for quick booking. 
-          openRoomsName.push(calendars[i].getName().split('-')[1]);
-          openRoomsId.push(calendars[i].getId());
+          openRoomsName.push(calendar.getName());
+          openRoomsId.push(calendar.getId());
        }   
     
   }
@@ -196,7 +205,8 @@ function bookGainesville()
   // Then give the users the option to book - List all the rooms available. 
   
   //make list of all gnv office rooms. 
-  
+    var rooms =[];
+
   //get all the calendars. 
   var calendars = CalendarApp.getAllCalendars();
   var openRoomsName = [];
@@ -261,7 +271,8 @@ function bookAtlanta()
   // Then give the users the option to book - List all the rooms available. 
   
   //make list of all atl office rooms. 
-  
+    var rooms =[];
+
   //get all the calendars. 
   var calendars = CalendarApp.getAllCalendars();
   var openRoomsName = [];
