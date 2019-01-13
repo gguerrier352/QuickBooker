@@ -19,8 +19,8 @@ function doGet(e)
 function doPost(e)
 {
   var commandReceived = e.parameter["text"];
-  
-  if (commandReceived.match(/help/)) showHelp();
+  if (commandReceived.match()) showWelcome();
+  if (commandReceived.match(/help/) || commandReceived.match(/Help/)) showHelp();
   if (commandReceived.match(/book/)) book();
   if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); 
   if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville();
@@ -56,6 +56,22 @@ function showHelp()
   message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
   
+  sendMessage(message);
+}
+
+function showWelcome()
+{
+  var message = "*Welcome to QuickBooker!* Books a room that is event free for at least the next hour.\n\n"; 
+  message += "- _Example Booking_ \n";
+  message += "*!meet  TPA* : Will book an open conference room in Tampa\n"; 
+  message += "*!meet book*  --> Books a room that has no event for the next hour in any Office, as long as subscribed.\n";  
+  message += "*!meet help  --> Shows all available commands.\n\n";   
+  message += "*Available commands:*\n\n";
+  message += "- *help*: What you see here.\n"; 
+  message += "- *book*: Books a room that is event free for at least the next hour Dependent on your subscribed calendars.\n"; 
+  message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n";  
+  message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
+  message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
   sendMessage(message);
 }
 
