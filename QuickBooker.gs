@@ -50,7 +50,7 @@ function showHelp()
   message += "- *help*: What you see here.\n"; 
   message += "- *book*: Books a room that has no event for the next hour.\n"; 
   message += "- *Coming Soon!*: Books a room that has no event for the next hour in the XYZ Office.\n"; 
-    message += "- *TMP*: Books a room that has no event for the next hour in the Tampa Office.\n"; 
+    message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n"; 
     message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
     message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
   sendMessage(message);
@@ -141,7 +141,6 @@ function bookTampa()
 
   
   //get all the calendars. 
- // var calendars = CalendarApp.getAllCalendars();
   var openRoomsName = [];
   var openRoomsId = [];
   
@@ -151,25 +150,18 @@ function bookTampa()
  
   for(var i=0; i<roomsInTampa.length; i++) 
   {    
-    //var first4 = roomsInTampa[i].getName().substr(0,4);
-    
-    //if(first4 !== 'TPA-')
-    //{
-      //continue;
-  //  }
+    var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);
       
     // check if the calendar has events from start to end time!
-    var meetingInTwoHours = roomsInTampa[i].getEvents(now, hourFromNow);
+    var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
     
     if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length) 
        {
-         var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);
          // array does not exist, is not an array, or is empty
          // add this room to a list of rooms available for quick booking. 
           openRoomsName.push(calendar.getName());
           openRoomsId.push(calendar.getId());
        }   
-    
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
