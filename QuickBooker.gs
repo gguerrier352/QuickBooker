@@ -1,30 +1,31 @@
  // todo 
-// add error catching for no rooms . error message 
 // add rooms for tmp and atl hard code id ?
 // modularize the method for booking rooms. Reduce to 1 method maybe 2 instead of 3. 
-// find way to communicate at user 
 // design a logo for it
-// 
+//   
+// 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
+  //Users may not be subscribed to all of them - So force them to sub 
+  
+  // So Find all the rooms 
+  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
+   
+  // Then give the users the option to book - List all the rooms available. 
 function doGet(e) 
 {
-  //Logger.log("dogett!");
   return HtmlService.createHtmlOutput(book());
 }
  
 
 function doPost(e)
 {
- // Logger.log("inside!");   
-
   var commandReceived = e.parameter["text"];
   
   if (commandReceived.match(/help/)) showHelp();
   if (commandReceived.match(/book/)) book();
-  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); //TMP
-  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville(); // GNV
-  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta(); //ATL
+  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); 
+  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville();
+  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta();
 }
-
 
 function sendMessage(message)
 {
@@ -49,24 +50,17 @@ function showHelp()
   var message = "*Available commands:*\n\n";
   message += "- *help*: What you see here.\n"; 
   message += "- *book*: Books a room that has no event for the next hour.\n"; 
+  message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n"; 
   message += "- *Coming Soon!*: Books a room that has no event for the next hour in the XYZ Office.\n"; 
-    message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n"; 
     message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
     message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
+  
   sendMessage(message);
 }
 
 
 function book() 
-{
-  // 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
-  //Users may not be subscribed to all of them - So force them to sub 
-  
-  // So Find all the rooms 
-  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
-   
-  // Then give the users the option to book - List all the rooms available. 
-  
+{ 
   //get all the calendars. 
   var calendars = CalendarApp.getAllCalendars();
   var openRoomsName = [];
@@ -94,53 +88,39 @@ function book()
          // add this room to a list of rooms available for quick booking. 
           openRoomsName.push(calendars[i].getName().split('-')[1]);
           openRoomsId.push(calendars[i].getId());
-       }   
-    
-  }
+       }      
+   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
   if (roomCalendar == null)
   {
-     var messageError = "No rooms found.";
+    var messageError = "No rooms found.";
     sendMessage(messageError);
     return messageError;
   }
   else
   {
-  var stringCalendarObj= openRoomsId[0];
-  var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+   var stringCalendarObj= openRoomsId[0];
+   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
   
 
-  Logger.log('Event ID: ' + event.getId());
-  Logger.log(openRoomsName);   
-  var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-  sendMessage(message);
-  return message;
+   Logger.log('Event ID: ' + event.getId());
+   Logger.log(openRoomsName);   
+   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
+   sendMessage(message);
+   return message;
   }
 }
 
 
 function bookTampa() 
-{
-  // 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
-  //Users may not be subscribed to all of them - So force them to sub 
-  
-  // So Find all the rooms 
-  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
-   
-  // Then give the users the option to book - List all the rooms available. 
-  
-  //make list of all tampa office rooms. 
-  
+{ 
   var fortDesotoRoomId = "352inc.com_775974472d726e5462556d30444d4f50396f72737077@resource.calendar.google.com";
   var madeiraRoomId = "352inc.com_31782d7065526f7074456149774d50564a7161726e51@resource.calendar.google.com";
   var stPeteBeach = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
   var sunsetBeachRoomId = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
-  
   var roomsInTampa = [fortDesotoRoomId,madeiraRoomId,stPeteBeach,sunsetBeachRoomId];
 
-  
-  //get all the calendars. 
   var openRoomsName = [];
   var openRoomsId = [];
   
@@ -150,8 +130,7 @@ function bookTampa()
  
   for(var i=0; i<roomsInTampa.length; i++) 
   {    
-    var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);
-      
+    var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);      
     // check if the calendar has events from start to end time!
     var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
     
@@ -164,38 +143,29 @@ function bookTampa()
        }   
   }
   
-  var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
-  if (roomCalendar == null)
-  {
+    var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+    if (roomCalendar == null)
+      {
      var messageError = "No rooms found.";
     sendMessage(messageError);
     return messageError;
-  }
-  else
-  {
-  var stringCalendarObj= openRoomsId[0];
-  var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
-  
-
-  Logger.log('Event ID: ' + event.getId());
-  Logger.log(openRoomsName);   
-  var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-  sendMessage(message);
-  return message;
-  }
+       }
+     else
+       {
+         var stringCalendarObj= openRoomsId[0];
+         var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+         
+          Logger.log('Event ID: ' + event.getId());
+          Logger.log(openRoomsName);   
+          var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
+          sendMessage(message);
+          return message;
+         }
 }
 
 
 function bookGainesville() 
-{
-  // 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
-  //Users may not be subscribed to all of them - So force them to sub 
-  
-  // So Find all the rooms 
-  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
-   
-  // Then give the users the option to book - List all the rooms available. 
-  
+{ 
   //make list of all gnv office rooms. 
     var rooms =[];
 
@@ -254,14 +224,6 @@ function bookGainesville()
 
 function bookAtlanta() 
 {
-  // 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
-  //Users may not be subscribed to all of them - So force them to sub 
-  
-  // So Find all the rooms 
-  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
-   
-  // Then give the users the option to book - List all the rooms available. 
-  
   //make list of all atl office rooms. 
     var rooms =[];
 
@@ -293,7 +255,6 @@ function bookAtlanta()
           openRoomsName.push(calendars[i].getName().split('-')[1]);
           openRoomsId.push(calendars[i].getId());
        }   
-    
   }
   
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
@@ -308,7 +269,6 @@ function bookAtlanta()
   var stringCalendarObj= openRoomsId[0];
   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
   
-
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
