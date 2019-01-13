@@ -25,6 +25,8 @@ function doPost(e)
   if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); 
   if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville();
   if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta();
+  
+  
 }
 
 function sendMessage(message)
@@ -184,7 +186,7 @@ function bookGainesville()
   var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
  
-  for(var i=0; i<roomsInTampa.length; i++) 
+  for(var i=0; i<roomsInGainesville.length; i++) 
   {    
     var calendar = CalendarApp.getCalendarById(roomsInGainesville[i]);      
     // check if the calendar has events from start to end time!
