@@ -1,8 +1,7 @@
- // todo 
+ /* Todo 
 // add rooms for tmp and atl hard code id ?
 // modularize the method for booking rooms. Reduce to 1 method maybe 2 instead of 3. 
-// design a logo for it
-//   
+// design a logo for it   
 // 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
   //Users may not be subscribed to all of them - So force them to sub 
   
@@ -10,11 +9,12 @@
   // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
    
   // Then give the users the option to book - List all the rooms available. 
+*/
+
 function doGet(e) 
 {
   return HtmlService.createHtmlOutput(book());
 }
- 
 
 function doPost(e)
 {
@@ -166,11 +166,17 @@ function bookTampa()
 
 function bookGainesville() 
 { 
-  //make list of all gnv office rooms. 
-    var rooms =[];
-
-  //get all the calendars. 
-  var calendars = CalendarApp.getAllCalendars();
+  var chromeRoomId = "352inc.com_37726846516d335a5f45793949714a61594f754a4677@resource.calendar.google.com";  
+  var explorerRoomId = "352inc.com_6974416a6c505374616b5330357234464b6a33637267@resource.calendar.google.com";  
+  var firefoxRoomId = "352inc.com_3038486f464a62464d30362d4b4c767266796c784451@resource.calendar.google.com";  
+  var incognitoRoomId = "352inc.com_37464750696657486a556d465039457265392d4f4351@resource.calendar.google.com";  
+  var operaRoomId = "352inc.com_622d544570554146486b7948794742392d4a4c386567@resource.calendar.google.com";  
+  var safariRoomID = "352inc.com_616c4132465247504f6b6147635f7853555a444e4e41@resource.calendar.google.com";
+  var seamonkeyRoomID = "352inc.com_455841424d503651756b6577684a6131326877745541@resource.calendar.google.com";
+  var silkRoomId = "352inc.com_467058326657387a6d6b5357415767464e56584d7541@resource.calendar.google.com";
+  
+  var roomsInGainesville = [chromeRoomId,explorerRoomId,firefoxRoomId,incognitoRoomId,operaRoomId,safariRoomID,seamonkeyRoomID,silkRoomId];
+  
   var openRoomsName = [];
   var openRoomsId = [];
   
@@ -178,57 +184,49 @@ function bookGainesville()
   var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
  
-  for(var i=0; i<calendars.length; i++) 
+  for(var i=0; i<roomsInTampa.length; i++) 
   {    
-    var first4 = calendars[i].getName().substr(0,4);
-    
-    if(first4 !== 'GNV-')
-    {
-      continue;
-    }
-      
+    var calendar = CalendarApp.getCalendarById(roomsInGainesville[i]);      
     // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendars[i].getEvents(now, hourFromNow);
+    var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
     
     if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length) 
        {
          // array does not exist, is not an array, or is empty
          // add this room to a list of rooms available for quick booking. 
-          openRoomsName.push(calendars[i].getName().split('-')[1]);
-          openRoomsId.push(calendars[i].getId());
+          openRoomsName.push(calendar.getName());
+          openRoomsId.push(calendar.getId());
        }   
-    
   }
   
-  var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
-  if (roomCalendar == null)
-  {
+    var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
+    if (roomCalendar == null)
+      {
      var messageError = "No rooms found.";
     sendMessage(messageError);
     return messageError;
-  }
-  else
-  {
-  var stringCalendarObj= openRoomsId[0];
-  var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
-  
-
-  Logger.log('Event ID: ' + event.getId());
-  Logger.log(openRoomsName);   
-  var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-  sendMessage(message);
-  return message;
-  }
+       }
+     else
+       {
+         var stringCalendarObj= openRoomsId[0];
+         var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+         
+          Logger.log('Event ID: ' + event.getId());
+          Logger.log(openRoomsName);   
+          var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
+          sendMessage(message);
+          return message;
+         }
 }
 
 
 function bookAtlanta() 
 {
-  //make list of all atl office rooms. 
-    var rooms =[];
-
-  //get all the calendars. 
-  var calendars = CalendarApp.getAllCalendars();
+  var beltlineRoomId = "352inc.com_6d656c4e7773546546556d36374642324e4d72415167@resource.calendar.google.com";  
+  var piedmontParkRoomId = "352inc.com_55334c5a67766e3031302d4c7a435749345576485f51@resource.calendar.google.com";  
+  var theGultchRoomId = "352inc.com_77515f76382d764b2d304f30363047675135366c6267@resource.calendar.google.com";
+  var roomsInAtlanta = [beltlineRoomId,piedmontParkRoomId,theGultchRoomId];
+  
   var openRoomsName = [];
   var openRoomsId = [];
   
@@ -236,27 +234,20 @@ function bookAtlanta()
   var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
  
-  for(var i=0; i<calendars.length; i++) 
-  {    
-    var first4 = calendars[i].getName().substr(0,4);
-    
-    if(first4 !== 'ATL-')
-    {
-      continue;
-    }
-      
+  for(var i=0; i<roomsInAtlanta.length; i++) 
+  {         
+    var calendar = CalendarApp.getCalendarById(roomsInAtlanta[i]);      
     // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendars[i].getEvents(now, hourFromNow);
+    var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
     
     if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length) 
        {
          // array does not exist, is not an array, or is empty
          // add this room to a list of rooms available for quick booking. 
-          openRoomsName.push(calendars[i].getName().split('-')[1]);
-          openRoomsId.push(calendars[i].getId());
+          openRoomsName.push(calendar.getName());
+          openRoomsId.push(calendar.getId());
        }   
   }
-  
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
   if (roomCalendar == null)
   {
