@@ -49,11 +49,10 @@ function showHelp()
 {
   var message = "*Available commands:*\n\n";
   message += "- *help*: What you see here.\n"; 
-  message += "- *book*: Books a room that has no event for the next hour.\n"; 
-  message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n"; 
-  message += "- *Coming Soon!*: Books a room that has no event for the next hour in the XYZ Office.\n"; 
-    message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
-    message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
+  message += "- *book*: Books a room  (according to your susbcribed google calendar) that has no event for the next hour.\n"; 
+  message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n";  
+  message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
+  message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
   
   sendMessage(message);
 }
@@ -94,15 +93,15 @@ function book()
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
   if (roomCalendar == null)
   {
-    var messageError = "No rooms found.";
+    var messageError = "No rooms found in any of your subscribed calendars.";
     sendMessage(messageError);
     return messageError;
   }
   else
   {
    var stringCalendarObj= openRoomsId[0];
-   var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
-  
+   var eventTitle = "Quick Meeting";
+   var event = CalendarApp.createEvent(eventTitle,now,endMeeting,{guests:stringCalendarObj});  
 
    Logger.log('Event ID: ' + event.getId());
    Logger.log(openRoomsName);   
@@ -146,14 +145,15 @@ function bookTampa()
     var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
     if (roomCalendar == null)
       {
-     var messageError = "No rooms found.";
+     var messageError = "No open conference rooms found in Tampa.";
     sendMessage(messageError);
     return messageError;
        }
      else
        {
          var stringCalendarObj= openRoomsId[0];
-         var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+           var eventTitle = "Quick Meeting";
+           var event = CalendarApp.createEvent(eventTitle,now,endMeeting,{guests:stringCalendarObj});
          
           Logger.log('Event ID: ' + event.getId());
           Logger.log(openRoomsName);   
@@ -202,14 +202,15 @@ function bookGainesville()
     var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
     if (roomCalendar == null)
       {
-     var messageError = "No rooms found.";
-    sendMessage(messageError);
-    return messageError;
+        var messageError = "No open conference rooms found in Gainesville.";
+         sendMessage(messageError);
+          return messageError;
        }
      else
        {
          var stringCalendarObj= openRoomsId[0];
-         var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+         var eventTitle = "Quick Meeting";
+         var event = CalendarApp.createEvent(eventTitle,now,endMeeting,{guests:stringCalendarObj});
          
           Logger.log('Event ID: ' + event.getId());
           Logger.log(openRoomsName);   
@@ -251,14 +252,15 @@ function bookAtlanta()
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
   if (roomCalendar == null)
   {
-     var messageError = "No rooms found.";
+     var messageError = "No open rooms conference rooms in Atlanta.";
     sendMessage(messageError);
     return messageError;
   }
   else
   {
   var stringCalendarObj= openRoomsId[0];
-  var event = CalendarApp.createEvent('Apollo 11 Landing',now,endMeeting,{guests:stringCalendarObj});
+  var eventTitle = "Quick Meeting";
+  var event = CalendarApp.createEvent(eventTitle,now,endMeeting,{guests:stringCalendarObj});
   
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
