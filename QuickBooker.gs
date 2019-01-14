@@ -20,15 +20,15 @@ function doPost(e)
 {
   
   var commandReceived = e.parameter["text"];
- // if (welcome === " ") showWelcome();
+  // if (welcome === " ") showWelcome();
+  
   if (commandReceived.match(/help/) || commandReceived.match(/Help/)) showHelp();
   if (commandReceived.match(/book/)) book();
   if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); 
   if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville();
   if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta();
   
-  return ContentService.createTextOutput(JSON.stringify({})).setMimeType(ContentService.MimeType.JSON);
-  
+  return ContentService.createTextOutput(JSON.stringify({})).setMimeType(ContentService.MimeType.JSON);  
   
 }
 
@@ -37,7 +37,7 @@ function sendMessage(message)
  // var channel = e.parameter["channel_name"]
   
   var payload = {
-    "channel": "#" + "quickmeet",
+   "channel": "#" + "quickmeet",
     "username": "Quick Meet",
     "icon_emoji": ":qm:",
     "text": message
