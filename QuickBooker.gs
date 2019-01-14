@@ -17,21 +17,58 @@ function doGet(e)
 }
 
 function doPost(e)
-{
+{  
+  var commandReceived = e.parameter["text"];  
+  Logger.log(e);
   
-  var commandReceived = e.parameter["text"];
-  // if (welcome === " ") showWelcome();
+  var message="";
+  // if (welcome === " ") showWelcome();  
+  if (commandReceived.match(/help/) || commandReceived.match(/Help/)) 
+  {
+    message = showHelp();
+  }  
+  if (commandReceived.match(/book/))   
+  {
+    message = book();
+  }  
+  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/))
+    {
+      message = bookTampa(); 
+    }
+  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) 
+      {
+        message = bookGainesville(); 
+      }
+  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/))   
+      {
+        message = bookAtlanta(); 
+      }
   
-  if (commandReceived.match(/help/) || commandReceived.match(/Help/)) showHelp();
-  if (commandReceived.match(/book/)) book();
-  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/)) bookTampa(); 
-  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/)) bookGainesville();
-  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/)) bookAtlanta();
+  var commandReceived = e.parameter["text"];  
+  var channel = e.parameter["channel_name"];
+  var reponseUrl = e.parameter["response_url"];
   
-  return ContentService.createTextOutput(JSON.stringify({})).setMimeType(ContentService.MimeType.JSON);  
-  
+   
+   var payload = 
+        {
+     // "response_type": "in_channel",
+      //"username": "Quick Meet",
+     // "icon_emoji": ":qm:",
+      "text": message
+          };
+
+ /* var options = 
+     {
+    'method': 'post',
+    'payload': JSON.stringify(payload)
+     };
+*/
+  //var response = UrlFetchApp.fetch(reponseUrl, options);
+  //return response;
+   return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
 }
 
+/*
 function sendMessage(message)
 {
  // var channel = e.parameter["channel_name"]
@@ -51,6 +88,7 @@ function sendMessage(message)
 
   var response = UrlFetchApp.fetch(url, options);
 }
+*/
 
 function showHelp()
 {
@@ -61,7 +99,12 @@ function showHelp()
   message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
   
-  sendMessage(message);
+ // sendMessage(message);
+  
+  
+  Logger.log(message);
+  return message;
+
 }
 
 function showWelcome()
@@ -77,7 +120,7 @@ function showWelcome()
   message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n";  
   message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n"; 
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n"; 
-  sendMessage(message);
+  //sendMessage(message);
 }
 
 
@@ -129,7 +172,7 @@ function book()
    Logger.log('Event ID: ' + event.getId());
    Logger.log(openRoomsName);   
    var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-   sendMessage(message);
+   //sendMessage(message);
    return message;
   }
 }
@@ -181,7 +224,7 @@ function bookTampa()
           Logger.log('Event ID: ' + event.getId());
           Logger.log(openRoomsName);   
           var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-          sendMessage(message);
+         // sendMessage(message);
           return message;
          }
 }
@@ -238,7 +281,7 @@ function bookGainesville()
           Logger.log('Event ID: ' + event.getId());
           Logger.log(openRoomsName);   
           var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-          sendMessage(message);
+         // sendMessage(message);
           return message;
          }
 }
@@ -288,7 +331,7 @@ function bookAtlanta()
   Logger.log('Event ID: ' + event.getId());
   Logger.log(openRoomsName);   
   var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-  sendMessage(message);
+ // sendMessage(message);
   return message;
   }
 }
