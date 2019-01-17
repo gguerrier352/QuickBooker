@@ -1,105 +1,156 @@
-/* Todo 
-// add rooms for tmp and atl hard code id ?
-// modularize the method for booking rooms. Reduce to 1 method maybe 2 instead of 3. 
-// design a logo for it   
-// 1 Find all the rooms - All the rooms that matter : GNV ATL TMP
-  //Users may not be subscribed to all of them - So force them to sub 
-  
-  // So Find all the rooms 
-  // after finding all the rooms - Triage room base on events - Is there a room open for the next hour at least?
-   
-  // Then give the users the option to book - List all the rooms available. 
-*/
+var RECURRING_KEY = "recurring";
+var ARGUMENTS_KEY = "arguments";
 
-function doGet(e)
+/**
+ * Sets up the arguments for the given trigger.
+ *
+ * @param {Trigger} trigger - The trigger for which the arguments are set up
+ * @param {*} functionArguments - The arguments which should be stored for the function call
+ * @param {boolean} recurring - Whether the trigger is recurring; if not the 
+ *   arguments and the trigger are removed once it called the function
+ */
+function setupTriggerArguments(trigger, functionArguments, recurring)
 {
-  //quickest way to debug - do not delete.
-  //return HtmlService.createHtmlOutput(book());
+  var triggerUid = trigger.getUniqueId();
+  var triggerData = {};
+  triggerData[RECURRING_KEY] = recurring;
+  triggerData[ARGUMENTS_KEY] = functionArguments;
+
+  PropertiesService.getScriptProperties().setProperty(triggerUid, JSON.stringify(triggerData));
 }
+
+/**
+ * Function which should be called when a trigger runs a function. Returns the stored arguments 
+ * and deletes the properties entry and trigger if it is not recurring.
+ *
+ * @param {string} triggerUid - The trigger id
+ * @return {*} - The arguments stored for this trigger
+ */
+function handleTriggered(triggerUid)
+{
+  var scriptProperties = PropertiesService.getScriptProperties();
+  var triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
+
+  if (!triggerData[RECURRING_KEY])
+  {
+    deleteTriggerByUid(triggerUid);
+  }
+
+  return triggerData[ARGUMENTS_KEY];
+}
+
+/**
+ * Deletes trigger arguments of the trigger with the given id.
+ *
+ * @param {string} triggerUid - The trigger id
+ */
+function deleteTriggerArguments(triggerUid)
+{
+  PropertiesService.getScriptProperties().deleteProperty(triggerUid);
+}
+
+/**
+ * Deletes a trigger with the given id and its arguments.
+ * When no project trigger with the id was found only an error is 
+ * logged and the function continues trying to delete the arguments.
+ * 
+ * @param {string} triggerUid - The trigger id
+ */
+function deleteTriggerByUid(triggerUid)
+{
+  if (!ScriptApp.getProjectTriggers().some(function (trigger)
+    {
+      if (trigger.getUniqueId() === triggerUid)
+      {
+        ScriptApp.deleteTrigger(trigger);
+        return true;
+      }
+
+      return false;
+    }))
+  {
+    console.error("Could not find trigger with id '%s'", triggerUid);
+  }
+
+  deleteTriggerArguments(triggerUid);
+}
+
+/**
+ * Deletes a trigger and its arguments.
+ * 
+ * @param {Trigger} trigger - The trigger
+ */
+function deleteTrigger(trigger)
+{
+  ScriptApp.deleteTrigger(trigger);
+  deleteTriggerArguments(trigger.getUniqueId());
+}
+
 
 function doPost(e)
 {
-  var commandReceived = e.parameter["text"];
-  // var welcomeScreen = e.parameter["text"];
-  var userName = e.parameter["user_name"];
-  var emailAddress = userName + "@352inc.com";
 
-  console.log(emailAddress);
-  console.log(userName);
+  var triggerArguments = 
+  {
+    commandReceived: e.parameter["text"],
+    userName: e.parameter["user_name"],
+    emailAddress: e.parameter["user_name"] + "@352inc.com",
+    responseUrl: e.parameter['response_url']
+  };
 
-  /*var now = new Date();
-  var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
-  var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
+  var command = triggerArguments.commandReceived;
+  var responseRes = triggerArguments.responseUrl;
+
   
-  
-  var calendarOwner =  CalendarApp.getCalendarsByName(userName);
-  var stringCalendarObj = CalendarApp.getId(); 
-  var event = CalendarApp.createEvent('testing',now,endMeeting,{guests:emailAddress});//.addGuest(calendarOwner + "@352inc.com"); 
-  console.log(calendarOwner);
+  if (typeof command == 'undefined' || !command || command.length === 0 ||
+    command === "" || !/[^\s]/.test(command) || /^\s*$/.test(command) ||
+    command.replace(/\s/g, "") === "")
+  {
+    showWelcome(responseRes);
+    return ContentService.createTextOutput(JSON.stringify({text: 'Now, Try Booking a Conference Room!'})).setMimeType(ContentService.MimeType.JSON);
 
-*/
+  }
+  else
+  {  
+      var trigger = ScriptApp.newTrigger('handleBooking').timeBased().after(1).create();
+         console.log(trigger, triggerArguments, false);
+         setupTriggerArguments(trigger, triggerArguments, false);
+  return ContentService.createTextOutput(JSON.stringify({text: 'Booking Conference Room...Will take a literal minute.'})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+function handleBooking(event)
+{
+  console.log('Handle Booking Triggered');
+
+  var argumentsFromTrigger = handleTriggered(event.triggerUid);
+  var commandReceived = argumentsFromTrigger.commandReceived;
+  var responseURL = argumentsFromTrigger.responseUrl;
+  var email = argumentsFromTrigger.emailAddress;
+
+  console.log(argumentsFromTrigger, commandReceived);
 
   var message = "";
-  if (typeof commandReceived == 'undefined' || !commandReceived || commandReceived.length === 0 || commandReceived === "" || !/[^\s]/.test(commandReceived) || /^\s*$/.test(commandReceived) || commandReceived.replace(/\s/g, "") === "")
+
+if (commandReceived.match(/help/) ||
+    commandReceived.match(/Help/))
   {
-    message = "";
-    message = showWelcome();
-  }
-  if (commandReceived.match(/help/) || commandReceived.match(/Help/))
-  {
-    message = "";
     message = showHelp();
   }
-  if (commandReceived.match(/book/))
+  if (commandReceived.match(/book/)|| (commandReceived.match(/tpa/) || commandReceived.match(/TPA/))||commandReceived.match(/gnv/) || commandReceived.match(/GNV/) ||
+           commandReceived.match(/atl/) || commandReceived.match(/ATL/))
+
   {
-    message = "";
-    message = book(emailAddress);
-  }
-  if (commandReceived.match(/TPA/) || commandReceived.match(/tpa/))
-  {
-    message = "";
-    message = bookTampa(emailAddress);
-  }
-  if (commandReceived.match(/GNV/) || commandReceived.match(/gnv/))
-  {
-    message = "";
-    message = bookGainesville(emailAddress);
-  }
-  if (commandReceived.match(/ATL/) || commandReceived.match(/atl/))
-  {
-    message = "";
-    message = bookAtlanta(emailAddress);
+    console.log('we are right before calling Books');
+    message = book(email, commandReceived);
   }
 
-  var commandReceived = e.parameter["text"];
-  var channel = e.parameter["channel_name"];
-  var reponseUrl = e.parameter["response_url"];
-  var payload = { // "username": "Quick Meet",
-    // "icon_emoji": ":qm:",
-    "text": message
-  };
-  return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
+  console.log('Hey almost done');
+  sendMessage(message,responseURL);
+
+  // TODO: Do URLFetcher request to response url here
 }
-
-/*
-function sendMessage(message)
-{
- // var channel = e.parameter["channel_name"]
-  
-  var payload = {
-   "channel": "#" + "quickmeet",
-    "text": message
-  };
-
-  var url = "https://hooks.slack.com/services/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";
-  var options = {
-    'method': 'post',
-    'payload': JSON.stringify(payload)
-  };
-
-  var response = UrlFetchApp.fetch(url, options);
-}
-*/
 
 function showHelp()
 {
@@ -111,10 +162,9 @@ function showHelp()
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n";
 
   return message;
-
 }
 
-function showWelcome()
+function showWelcome(responseURL)
 {
   var message = "*Welcome to Quick Meet!*\n";
   message += "Books a room that is event free for at least the next hour.\n";
@@ -128,123 +178,27 @@ function showWelcome()
   message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n";
   message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n";
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n";
+  sendMessage(message,responseURL)
 
-  return message;
+  //return message;
 }
 
 
-function book(emailAddress)
+function book(emailAddress, commandReceivedOffice)
 {
-  //get all the calendars. 
-  var calendars = CalendarApp.getAllCalendars();
-  var openRoomsName = [];
-  var openRoomsId = [];
+  console.log('Booking or tryinng to!',emailAddress, commandReceivedOffice);
+  // pass what the command was 
+  var beltlineRoomId = "352inc.com_6d656c4e7773546546556d36374642324e4d72415167@resource.calendar.google.com";
+  var piedmontParkRoomId = "352inc.com_55334c5a67766e3031302d4c7a435749345576485f51@resource.calendar.google.com";
+  var theGultchRoomId = "352inc.com_77515f76382d764b2d304f30363047675135366c6267@resource.calendar.google.com";
+  var roomsInAtlanta = [beltlineRoomId, piedmontParkRoomId, theGultchRoomId];
 
-  var now = new Date();
-  var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
-  var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
-
-  for (var i = 0; i < calendars.length; i++)
-  {
-    var first4 = calendars[i].getName().substr(0, 4);
-
-    if (first4 !== 'ATL-' && first4 !== 'GNV-' && first4 !== 'TPA-')
-    {
-      continue;
-    }
-
-    // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendars[i].getEvents(now, hourFromNow);
-
-    if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length)
-    {
-      // array does not exist, is not an array, or is empty
-      // add this room to a list of rooms available for quick booking. 
-      openRoomsName.push(calendars[i].getName().split('-')[1]);
-      openRoomsId.push(calendars[i].getId());
-    }
-  }
-
-  var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
-  if (roomCalendar == null)
-  {
-    var messageError = "No rooms found in any of your subscribed calendars.";
-    return messageError;
-  }
-  else
-  {
-    var stringCalendarObj = openRoomsId[0];
-    var eventTitle = "Quick Meeting";
-    var event = CalendarApp.createEvent(eventTitle, now, endMeeting,
-    {
-      guests: stringCalendarObj,
-      guests: emailAddress
-    });
-
-    var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-    return message;
-  }
-}
-
-
-function bookTampa(emailAddress)
-{
   var fortDesotoRoomId = "352inc.com_775974472d726e5462556d30444d4f50396f72737077@resource.calendar.google.com";
   var madeiraRoomId = "352inc.com_31782d7065526f7074456149774d50564a7161726e51@resource.calendar.google.com";
   var stPeteBeach = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
   var sunsetBeachRoomId = "352inc.com_50415330743169324b6b477575487468623250334c41@resource.calendar.google.com";
   var roomsInTampa = [fortDesotoRoomId, madeiraRoomId, stPeteBeach, sunsetBeachRoomId];
 
-  var openRoomsName = [];
-  var openRoomsId = [];
-
-  var now = new Date();
-  var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
-  var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
-
-  for (var i = 0; i < roomsInTampa.length; i++)
-  {
-    var calendar = CalendarApp.getCalendarById(roomsInTampa[i]);
-    // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
-
-    if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length)
-    {
-      // array does not exist, is not an array, or is empty
-      // add this room to a list of rooms available for quick booking. 
-      openRoomsName.push(calendar.getName());
-      openRoomsId.push(calendar.getId());
-    }
-  }
-
-  var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
-  if (roomCalendar == null)
-  {
-    var messageError = "No open conference rooms found in Tampa.";
-    return messageError;
-  }
-  else
-  {
-    var stringCalendarObj = openRoomsId[0];
-    var eventTitle = "Quick Meeting";
-    var myGuests = [];
-    myGuests.push(emailAddress);
-    myGuests.push(stringCalendarObj);
-    console.log(myGuests);
-
-    var event = CalendarApp.createEvent(eventTitle, now, endMeeting,
-    {
-      guests: myGuests
-    });
-
-    var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-    return message;
-  }
-}
-
-
-function bookGainesville(emailAddress)
-{
   var chromeRoomId = "352inc.com_37726846516d335a5f45793949714a61594f754a4677@resource.calendar.google.com";
   var explorerRoomId = "352inc.com_6974416a6c505374616b5330357234464b6a33637267@resource.calendar.google.com";
   var firefoxRoomId = "352inc.com_3038486f464a62464d30362d4b4c767266796c784451@resource.calendar.google.com";
@@ -253,7 +207,6 @@ function bookGainesville(emailAddress)
   var safariRoomID = "352inc.com_616c4132465247504f6b6147635f7853555a444e4e41@resource.calendar.google.com";
   var seamonkeyRoomID = "352inc.com_455841424d503651756b6577684a6131326877745541@resource.calendar.google.com";
   var silkRoomId = "352inc.com_467058326657387a6d6b5357415767464e56584d7541@resource.calendar.google.com";
-
   var roomsInGainesville = [chromeRoomId, explorerRoomId, firefoxRoomId, incognitoRoomId, operaRoomId, safariRoomID, seamonkeyRoomID, silkRoomId];
 
   var openRoomsName = [];
@@ -262,18 +215,35 @@ function bookGainesville(emailAddress)
   var now = new Date();
   var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
+  var office = [];
 
-  for (var i = 0; i < roomsInGainesville.length; i++)
+  
+  if (commandReceivedOffice == "GNV"||commandReceivedOffice == "gnv")
   {
-    var calendar = CalendarApp.getCalendarById(roomsInGainesville[i]);
+    console.log('In booking GNV');
+    office = roomsInGainesville;
+    console.log(office,roomsInGainesville)
+  }
+  else if (commandReceivedOffice == "TPA"||commandReceivedOffice == "tpa")
+  {
+    office = roomsInAtlanta;
+  }
+  else if (commandReceivedOffice == "ATL"||commandReceivedOffice == "atl")
+  {
+    office = roomsInTampa;
+  }
+
+  for (var i = 0; i < office.length; i++)
+  {
+    var calendar = CalendarApp.getCalendarById(office[i]);
+    console.log(calendar);
+
     // check if the calendar has events from start to end time!
     var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
 
     if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length)
     {
-      // array does not exist, is not an array, or is empty
-      // add this room to a list of rooms available for quick booking. 
-      openRoomsName.push(calendar.getName());
+      openRoomsName.push(calendar.getName().split('-')[1]);
       openRoomsId.push(calendar.getId());
     }
   }
@@ -281,72 +251,52 @@ function bookGainesville(emailAddress)
   var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
   if (roomCalendar == null)
   {
-    var messageError = "No open conference rooms found in Gainesville.";
+    var messageError = "No rooms found in  " + commandReceivedOffice;
     return messageError;
   }
   else
   {
     var stringCalendarObj = openRoomsId[0];
     var eventTitle = "Quick Meeting";
+    var myGuests = emailAddress + ',' + stringCalendarObj;
+
     var event = CalendarApp.createEvent(eventTitle, now, endMeeting,
     {
-      guests: stringCalendarObj,
-      guests: emailAddress
+      guests: myGuests
     });
-
     var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
+
+    console.log(myGuests);
+    console.log(emailAddress);
+    console.log(stringCalendarObj);
+    console.log(commandReceivedOffice);
+    //sendMessage(message);
     return message;
   }
-}
-
-
-function bookAtlanta(emailAddress)
-{
-  var beltlineRoomId = "352inc.com_6d656c4e7773546546556d36374642324e4d72415167@resource.calendar.google.com";
-  var piedmontParkRoomId = "352inc.com_55334c5a67766e3031302d4c7a435749345576485f51@resource.calendar.google.com";
-  var theGultchRoomId = "352inc.com_77515f76382d764b2d304f30363047675135366c6267@resource.calendar.google.com";
-  var roomsInAtlanta = [beltlineRoomId, piedmontParkRoomId, theGultchRoomId];
-
-  var openRoomsName = [];
-  var openRoomsId = [];
-
-  var now = new Date();
-  var hourFromNow = new Date(now.getTime() + (1 * 60 * 60 * 1000));
-  var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
-
-  for (var i = 0; i < roomsInAtlanta.length; i++)
-  {
-    var calendar = CalendarApp.getCalendarById(roomsInAtlanta[i]);
-    // check if the calendar has events from start to end time!
-    var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
-
-    if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length)
-    {
-      // array does not exist, is not an array, or is empty
-      // add this room to a list of rooms available for quick booking. 
-      openRoomsName.push(calendar.getName());
-      openRoomsId.push(calendar.getId());
-    }
   }
-  var roomCalendar = CalendarApp.getCalendarById(openRoomsId[0]);
-  if (roomCalendar == null)
-  {
-    var messageError = "No open rooms conference rooms in Atlanta.";
-    return messageError;
-  }
-  else
-  {
-    var stringCalendarObj = openRoomsId[0];
-    var eventTitle = "Quick Meeting";
-    var event = CalendarApp.createEvent(eventTitle, now, endMeeting,
-    {
-      guests: stringCalendarObj,
-      guests: emailAddress
-    });
 
-    Logger.log('Event ID: ' + event.getId());
-    Logger.log(openRoomsName);
-    var message = 'We booked ' + openRoomsName[0] + '  From right now until ' + endMeeting;
-    return message;
+  function sendMessage(message,responseURL)
+  {
+   // console.log('sending message');
+    var payload = {
+      "channel": "#" + getProperty("SLACK_CHANNEL_NAME"),
+      //"username": "Staging Status",
+      //"icon_emoji": ":robot_face:",
+      "text": message
+    };
+
+   // var url = getProperty("SLACK_INCOMING_WEBHOOK");
+    //var url = responseURL;
+    var options = {
+      'method': 'post',
+      'payload': JSON.stringify(payload)
+    };
+
+    var response = UrlFetchApp.fetch(responseURL, options);
   }
-}
+
+  function getProperty(propertyName)
+  {
+    return PropertiesService.getScriptProperties().getProperty(propertyName);
+  }
+
