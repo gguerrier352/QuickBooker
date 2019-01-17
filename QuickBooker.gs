@@ -90,8 +90,7 @@ function deleteTrigger(trigger)
 function doPost(e)
 {
 
-  var triggerArguments = 
-  {
+  var triggerArguments = {
     commandReceived: e.parameter["text"],
     userName: e.parameter["user_name"],
     emailAddress: e.parameter["user_name"] + "@352inc.com",
@@ -101,29 +100,33 @@ function doPost(e)
   var command = triggerArguments.commandReceived;
   var responseRes = triggerArguments.responseUrl;
 
-  
+
   if (typeof command == 'undefined' || !command || command.length === 0 ||
     command === "" || !/[^\s]/.test(command) || /^\s*$/.test(command) ||
     command.replace(/\s/g, "") === "")
   {
     showWelcome(responseRes);
-    return ContentService.createTextOutput(JSON.stringify({text: 'Now, Try Booking a Conference Room!'})).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify(
+    {
+      text: 'Now, Try Booking a Conference Room!'
+    })).setMimeType(ContentService.MimeType.JSON);
 
   }
   else
-  {  
-      var trigger = ScriptApp.newTrigger('handleBooking').timeBased().after(1).create();
-         console.log(trigger, triggerArguments, false);
-         setupTriggerArguments(trigger, triggerArguments, false);
-  return ContentService.createTextOutput(JSON.stringify({text: 'Booking Conference Room...Will take a literal minute.'})).setMimeType(ContentService.MimeType.JSON);
+  {
+    var trigger = ScriptApp.newTrigger('handleBooking').timeBased().after(2).create();
+    setupTriggerArguments(trigger, triggerArguments, false);
+    return ContentService.createTextOutput(JSON.stringify(
+    {
+      text: 'Booking Conference Room...Will take a literal minute.'
+    })).setMimeType(ContentService.MimeType.JSON);
   }
+
 }
 
 
 function handleBooking(event)
 {
-  console.log('Handle Booking Triggered');
-
   var argumentsFromTrigger = handleTriggered(event.triggerUid);
   var commandReceived = argumentsFromTrigger.commandReceived;
   var responseURL = argumentsFromTrigger.responseUrl;
@@ -133,23 +136,19 @@ function handleBooking(event)
 
   var message = "";
 
-if (commandReceived.match(/help/) ||
+  if (commandReceived.match(/help/) ||
     commandReceived.match(/Help/))
   {
     message = showHelp();
   }
-  if (commandReceived.match(/book/)|| (commandReceived.match(/tpa/) || commandReceived.match(/TPA/))||commandReceived.match(/gnv/) || commandReceived.match(/GNV/) ||
-           commandReceived.match(/atl/) || commandReceived.match(/ATL/))
+  if (commandReceived.match(/book/) || (commandReceived.match(/tpa/) || commandReceived.match(/TPA/)) || commandReceived.match(/gnv/) || commandReceived.match(/GNV/) ||
+    commandReceived.match(/atl/) || commandReceived.match(/ATL/))
 
   {
-    console.log('we are right before calling Books');
     message = book(email, commandReceived);
   }
 
-  console.log('Hey almost done');
-  sendMessage(message,responseURL);
-
-  // TODO: Do URLFetcher request to response url here
+  sendMessage(message, responseURL);
 }
 
 function showHelp()
@@ -178,16 +177,13 @@ function showWelcome(responseURL)
   message += "- *TPA*: Books a room that has no event for the next hour in the Tampa Office.\n";
   message += "- *GNV*: Books a room that has no event for the next hour in the Gainesville Office.\n";
   message += "- *ATL*: Books a room that has no event for the next hour in the Atlanta Office.\n";
-  sendMessage(message,responseURL)
-
-  //return message;
+  
+  sendMessage(message, responseURL)
 }
 
 
 function book(emailAddress, commandReceivedOffice)
 {
-  console.log('Booking or tryinng to!',emailAddress, commandReceivedOffice);
-  // pass what the command was 
   var beltlineRoomId = "352inc.com_6d656c4e7773546546556d36374642324e4d72415167@resource.calendar.google.com";
   var piedmontParkRoomId = "352inc.com_55334c5a67766e3031302d4c7a435749345576485f51@resource.calendar.google.com";
   var theGultchRoomId = "352inc.com_77515f76382d764b2d304f30363047675135366c6267@resource.calendar.google.com";
@@ -202,6 +198,7 @@ function book(emailAddress, commandReceivedOffice)
   var chromeRoomId = "352inc.com_37726846516d335a5f45793949714a61594f754a4677@resource.calendar.google.com";
   var explorerRoomId = "352inc.com_6974416a6c505374616b5330357234464b6a33637267@resource.calendar.google.com";
   var firefoxRoomId = "352inc.com_3038486f464a62464d30362d4b4c767266796c784451@resource.calendar.google.com";
+
   var incognitoRoomId = "352inc.com_37464750696657486a556d465039457265392d4f4351@resource.calendar.google.com";
   var operaRoomId = "352inc.com_622d544570554146486b7948794742392d4a4c386567@resource.calendar.google.com";
   var safariRoomID = "352inc.com_616c4132465247504f6b6147635f7853555a444e4e41@resource.calendar.google.com";
@@ -217,18 +214,17 @@ function book(emailAddress, commandReceivedOffice)
   var endMeeting = new Date(now.getTime() + (0.5 * 60 * 60 * 1000));
   var office = [];
 
-  
-  if (commandReceivedOffice == "GNV"||commandReceivedOffice == "gnv")
+
+  if (commandReceivedOffice == "GNV" || commandReceivedOffice == "gnv")
   {
-    console.log('In booking GNV');
     office = roomsInGainesville;
-    console.log(office,roomsInGainesville)
+    console.log(office, roomsInGainesville)
   }
-  else if (commandReceivedOffice == "TPA"||commandReceivedOffice == "tpa")
+  else if (commandReceivedOffice == "TPA" || commandReceivedOffice == "tpa")
   {
     office = roomsInAtlanta;
   }
-  else if (commandReceivedOffice == "ATL"||commandReceivedOffice == "atl")
+  else if (commandReceivedOffice == "ATL" || commandReceivedOffice == "atl")
   {
     office = roomsInTampa;
   }
@@ -236,12 +232,9 @@ function book(emailAddress, commandReceivedOffice)
   for (var i = 0; i < office.length; i++)
   {
     var calendar = CalendarApp.getCalendarById(office[i]);
-    console.log(calendar);
-
-    // check if the calendar has events from start to end time!
     var meetingInTwoHours = calendar.getEvents(now, hourFromNow);
 
-    if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length)
+    if (!Array.isArray(meetingInTwoHours) || !meetingInTwoHours.length || !meetingInTwoHours == null)
     {
       openRoomsName.push(calendar.getName().split('-')[1]);
       openRoomsId.push(calendar.getId());
@@ -270,33 +263,26 @@ function book(emailAddress, commandReceivedOffice)
     console.log(emailAddress);
     console.log(stringCalendarObj);
     console.log(commandReceivedOffice);
-    //sendMessage(message);
     return message;
   }
-  }
+}
 
-  function sendMessage(message,responseURL)
-  {
-   // console.log('sending message');
-    var payload = {
-      "channel": "#" + getProperty("SLACK_CHANNEL_NAME"),
-      //"username": "Staging Status",
-      //"icon_emoji": ":robot_face:",
-      "text": message
-    };
+function sendMessage(message, responseURL)
+{
+  var payload = {
+    "channel": "#" + getProperty("SLACK_CHANNEL_NAME"),
+    "text": message
+  };
 
-   // var url = getProperty("SLACK_INCOMING_WEBHOOK");
-    //var url = responseURL;
-    var options = {
-      'method': 'post',
-      'payload': JSON.stringify(payload)
-    };
+  var options = {
+    'method': 'post',
+    'payload': JSON.stringify(payload)
+  };
 
-    var response = UrlFetchApp.fetch(responseURL, options);
-  }
+  var response = UrlFetchApp.fetch(responseURL, options);
+}
 
-  function getProperty(propertyName)
-  {
-    return PropertiesService.getScriptProperties().getProperty(propertyName);
-  }
-
+function getProperty(propertyName)
+{
+  return PropertiesService.getScriptProperties().getProperty(propertyName);
+}
